@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "587031729064",
+    "firebase_url": "https://jibgwan-default-rtdb.firebaseio.com",
+    "project_id": "jibgwan",
+    "storage_bucket": "jibgwan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:587031729064:android:cfc75dd09fd907ca29c39d",
+        "android_client_info": {
+          "package_name": "com.example.jibgwa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvns13TabMoEceHvBu9qas6KZ5cKRPl8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:587031729064:android:93957b000e580fe729c39d",
+        "android_client_info": {
+          "package_name": "com.example.jibgwan"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvns13TabMoEceHvBu9qas6KZ5cKRPl8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:587031729064:android:3948ef92b348539e29c39d",
+        "android_client_info": {
+          "package_name": "com.example.jibhwa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAvns13TabMoEceHvBu9qas6KZ5cKRPl8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
