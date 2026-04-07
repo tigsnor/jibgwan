@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // 추가된 임포트
-import 'package:jibgwan/constants/colors.dart';
 import 'package:jibgwan/firebase_options.dart';
 import 'package:jibgwan/widgets/bottom_nav_bar.dart';
 import 'package:provider/provider.dart';
@@ -18,7 +17,6 @@ import 'screens/login_page.dart';
 import 'screens/signup_page.dart'; // SignupPage 임포트 추가
 import 'screens/splash_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:image_picker/image_picker.dart';
 
 void main() async {
   // 반드시 가장 먼저 호출
@@ -37,8 +35,6 @@ void main() async {
         throw TimeoutException('SharedPreferences initialization timed out');
       },
     );
-    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-
     runApp(
       MultiProvider(
         providers: [

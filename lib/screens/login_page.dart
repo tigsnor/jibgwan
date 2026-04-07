@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:jibgwan/main.dart';
 import '../constants/colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import '../constants/api_constants.dart';
 import '../services/token_service.dart';
+import '../services/auth_service.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -146,23 +144,12 @@ class _LoginPageState extends State<LoginPage> {
     if (_formKey.currentState!.validate()) {
       _formKey.currentState!.save();
       try {
-        // 로그인 API 호출
-        final response = await http.post(
-          Uri.parse(ApiConstants.apiBaseUrl + ApiConstants.loginEndpoint),
-          body: json.encode({
-            'email': email,
-            'password': password,
-          }),
-          headers: {'Content-Type': 'application/json'},
-        );
-
-        if (response.statusCode != 200) {
-          throw Exception('로그인 실패: ${response.body}');
+        final authService = AuthService();
+        final credential = await authService.signIn(email, password);
+        final token = await credential.user?.getIdToken();
+        if (token == null) {
+          throw Exception('토큰 발급에 실패했습니다.');
         }
-
-        // 응답에서 토큰 추출 및 저장
-        final responseData = json.decode(response.body);
-        final token = responseData['token'];
         await TokenService.saveToken(token);
 
         // 로그인 상태 저장

@@ -35,7 +35,7 @@ class AuthService {
       if (token == null) return 'user';
 
       final response = await http.get(
-        Uri.parse(ApiConstants.apiBaseUrl + ApiConstants.getUserRoleEndpoint),
+        ApiConstants.buildUri(ApiConstants.getUserRoleEndpoint),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token'
