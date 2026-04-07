@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import { signup, login, approveUser } from "./auth";
+import {signup, login, approveUser} from "./auth";
 
 admin.initializeApp();
 
