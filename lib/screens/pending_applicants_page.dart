@@ -76,7 +76,7 @@ class PendingApplicantsPage extends StatelessWidget {
             child: const Text('거절', style: TextStyle(color: Colors.red)),
           ),
           TextButton(
-            onPressed: () => _approveUser(context, userId, user),
+            onPressed: () => _approveUser(context, userId),
             child: const Text('승인', style: TextStyle(color: Colors.green)),
           ),
         ],
@@ -84,8 +84,7 @@ class PendingApplicantsPage extends StatelessWidget {
     );
   }
 
-  Future<void> _approveUser(
-      BuildContext context, String userId, Map<String, dynamic> user) async {
+  Future<void> _approveUser(BuildContext context, String userId) async {
     try {
       final token = await TokenService.getToken();
       if (token == null) {
@@ -93,14 +92,9 @@ class PendingApplicantsPage extends StatelessWidget {
       }
 
       final response = await http.post(
-        Uri.parse(ApiConstants.apiBaseUrl + ApiConstants.approveUserEndpoint),
+        ApiConstants.buildUri(ApiConstants.approveUserEndpoint),
         body: json.encode({
           'userId': userId,
-          'email': user['email'],
-          'password': user['password'],
-          'name': user['name'],
-          'realEstateName': user['realEstateName'],
-          'businessRegistrationNumber': user['businessRegistrationNumber'],
         }),
         headers: {
           'Content-Type': 'application/json',
@@ -139,7 +133,7 @@ class PendingApplicantsPage extends StatelessWidget {
       }
 
       final response = await http.post(
-        Uri.parse(ApiConstants.apiBaseUrl + ApiConstants.rejectUserEndpoint),
+        ApiConstants.buildUri(ApiConstants.rejectUserEndpoint),
         body: json.encode({'userId': userId}),
         headers: {
           'Content-Type': 'application/json',
@@ -154,7 +148,7 @@ class PendingApplicantsPage extends StatelessWidget {
       if (context.mounted) {
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('회원가입이 거절되었습니다. 이메일이 발송되었습니다.')),
+          const SnackBar(content: Text('회원가입이 거절되었습니다.')),
         );
       }
     } catch (e) {
