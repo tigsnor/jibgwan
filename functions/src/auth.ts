@@ -1,81 +1,96 @@
-import * as functions from 'firebase-functions';
-import * as admin from 'firebase-admin';
-import * as bcrypt from 'bcrypt';
-import { Request, Response } from 'express';
+import * as functions from "firebase-functions";
+import * as admin from "firebase-admin";
+import {Request, Response} from "express";
 
-admin.initializeApp();
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+};
 
-export const signup = functions.https.onRequest(async (req: Request, res: Response) => {
+export const signup = functions.https.onRequest(async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const { email, password, name, realEstateName, businessRegistrationNumber } = req.body;
-    
+    const {email, name, realEstateName, businessRegistrationNumber} = req.body;
+
     // 1. pending_users 컬렉션에 저장
-    await admin.firestore().collection('pending_users').add({
+    await admin.firestore().collection("pending_users").add({
       email,
-      password: await bcrypt.hash(password, 10),
+      // 승인 이전에는 비밀번호를 저장하지 않습니다.
+      // 승인 후 Firebase Auth의 비밀번호 재설정 플로우로 최초 비밀번호를 설정합니다.
       name,
       realEstateName,
       businessRegistrationNumber,
-      status: 'pending',
+      status: "pending",
       timestamp: admin.firestore.FieldValue.serverTimestamp(),
     });
 
-    res.status(200).json({ message: '회원가입 신청이 완료되었습니다.' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(200).json({message: "회원가입 신청이 완료되었습니다."});
+  } catch (error: unknown) {
+    res.status(500).json({error: getErrorMessage(error)});
   }
 });
 
-export const login = functions.https.onRequest(async (req: Request, res: Response) => {
-  try {
-    const { email, password } = req.body;
-    
-    // 1. 사용자 확인
-    const userRecord = await admin.auth().getUserByEmail(email);
-    
-    // 2. 비밀번호 검증
-    const passwordHash = userRecord.passwordHash;
-    if (!passwordHash) {
-      throw new Error('Password hash not found');
-    }
-    
-    const isValid = await bcrypt.compare(password, passwordHash);
-    
-    if (!isValid) {
-      throw new Error('Invalid credentials');
-    }
-
-    // 3. Custom Token 생성
-    const token = await admin.auth().createCustomToken(userRecord.uid);
-    
-    res.status(200).json({ token });
-  } catch (error: any) {
-    res.status(401).json({ error: error.message });
-  }
+export const login = functions.https.onRequest(async (
+  _req: Request,
+  res: Response,
+) => {
+  res.status(410).json({
+    error: "Deprecated endpoint. Use Firebase Client SDK login.",
+  });
 });
 
-export const approveUser = functions.https.onRequest(async (req: Request, res: Response) => {
+export const approveUser = functions.https.onRequest(async (
+  req: Request,
+  res: Response,
+) => {
   try {
-    const { userId, email, password } = req.body;
-    
-    // 1. Firebase Auth 계정 생성
-    const userRecord = await admin.auth().createUser({
-      email,
-      password,
-    });
+    const {userId} = req.body;
+    if (!userId) {
+      res.status(400).json({error: "userId is required"});
+      return;
+    }
+
+    const pendingDoc = await admin.firestore()
+      .collection("pending_users")
+      .doc(userId)
+      .get();
+    if (!pendingDoc.exists) {
+      res.status(404).json({error: "Pending user not found"});
+      return;
+    }
+
+    const pendingData = pendingDoc.data();
+    const email = pendingData?.email as string | undefined;
+
+    if (!email) {
+      res.status(400).json({error: "Pending user email is missing"});
+      return;
+    }
+
+    // 1. Firebase Auth 계정 생성 (비밀번호는 승인 후 리셋 링크로 설정)
+    const userRecord = await admin.auth().createUser({email});
+    const passwordResetLink = await admin.auth()
+      .generatePasswordResetLink(email);
 
     // 2. users 컬렉션에 정보 저장
-    await admin.firestore().collection('users').doc(userRecord.uid).set({
+    await admin.firestore().collection("users").doc(userRecord.uid).set({
       email,
-      role: 'admin',
+      role: "admin",
       approved: true,
     });
 
     // 3. pending_users에서 삭제
-    await admin.firestore().collection('pending_users').doc(userId).delete();
+    await admin.firestore().collection("pending_users").doc(userId).delete();
 
-    res.status(200).json({ message: '사용자가 승인되었습니다.' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+    res.status(200).json({
+      message: "사용자가 승인되었습니다. 비밀번호 설정 링크를 전달하세요.",
+      passwordResetLink,
+    });
+  } catch (error: unknown) {
+    res.status(500).json({error: getErrorMessage(error)});
   }
-}); 
+});
