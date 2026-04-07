@@ -174,7 +174,7 @@ class SettingsPage extends StatelessWidget {
       }
 
       final response = await http.post(
-        Uri.parse(ApiConstants.apiBaseUrl + ApiConstants.logoutEndpoint),
+        ApiConstants.buildUri(ApiConstants.logoutEndpoint),
         headers: {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token'
@@ -187,6 +187,7 @@ class SettingsPage extends StatelessWidget {
 
       // 토큰 삭제
       await TokenService.removeToken();
+      await FirebaseAuth.instance.signOut();
 
       // SharedPreferences에서 로그인 상태 삭제
       SharedPreferences prefs = await SharedPreferences.getInstance();

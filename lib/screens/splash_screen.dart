@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jibgwan/constants/colors.dart';
 import 'login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:jibgwan/main.dart';
+import '../services/token_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -52,12 +54,28 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     final prefs = await SharedPreferences.getInstance();
-    final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+    final firebaseUser = FirebaseAuth.instance.currentUser;
+    final storedToken = await TokenService.getToken();
+    bool hasValidSession = firebaseUser != null && storedToken != null;
+
+    if (hasValidSession) {
+      try {
+        await firebaseUser!.getIdToken(true);
+      } catch (_) {
+        hasValidSession = false;
+      }
+    }
+
+    if (!hasValidSession) {
+      await FirebaseAuth.instance.signOut();
+      await TokenService.removeToken();
+      await prefs.remove('isLoggedIn');
+    }
 
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            isLoggedIn ? const MainScaffold() : const LoginPage(),
+            hasValidSession ? const MainScaffold() : const LoginPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
