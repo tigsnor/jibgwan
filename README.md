@@ -29,6 +29,7 @@ samples, guidance on mobile development, and a full API reference.
 flutter pub get
 flutter analyze
 flutter test
+flutter run --dart-define=API_BASE_URL=https://<region>-<project>.cloudfunctions.net
 ```
 
 ### Firebase Functions checks
