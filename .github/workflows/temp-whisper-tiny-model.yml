@@ -1,0 +1,28 @@
+name: Temp Whisper Tiny Model Transfer
+
+on:
+  push:
+    branches:
+      - temp/audio-transcription-20260824
+    paths:
+      - .github/workflows/temp-whisper-tiny-model.yml
+
+jobs:
+  model:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download multilingual Whisper tiny q5_1
+        run: |
+          set -euo pipefail
+          curl -L --fail --retry 3 -o ggml-tiny-q5_1.bin \
+            https://github.com/w3xgroup/taskurio-models/releases/download/whisper-models-v1/ggml-tiny-q5_1.bin
+          echo "818710568da3ca15689e31a743197b520007872ff9576237bda97bd1b469c3d7  ggml-tiny-q5_1.bin" | sha256sum -c -
+      - name: Upload model artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: temp-whisper-tiny-q5
+          path: ggml-tiny-q5_1.bin
+          retention-days: 1
+          compression-level: 0
